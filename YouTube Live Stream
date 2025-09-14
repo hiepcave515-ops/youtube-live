@@ -1,0 +1,29 @@
+name: YouTube Live Stream
+
+on:
+  workflow_dispatch: # Chạy thủ công từ tab Actions
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Cài đặt gdown và ffmpeg
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
+        pip install gdown
+
+    - name: Tải video từ Google Drive
+      run: |
+        echo "📥 Đang tải video từ Google Drive..."
+        gdown "https://drive.google.com/uc?id=${{ secrets.GDRIVE_FILE_ID }}" -O video.mp4
+
+    - name: Stream lên YouTube (loop vô hạn)
+      run: |
+        echo "🚀 Bắt đầu phát trực tiếp..."
+        ffmpeg -re -stream_loop -1 -i video.mp4 \
+        -c copy -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YT_STREAM_KEY }}"
